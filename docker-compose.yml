@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092          # 🟢 Bind to all interfaces
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_ZOOKEEPER_CONNECTION_TIMEOUT_MS: "30000"
+      KAFKA_ZOOKEEPER_SESSION_TIMEOUT_MS: "30000"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  kafka-streams-hll:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+      - redis
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - SPRING_MAIN_LOGGING_LEVEL=org.springframework.kafka=DEBUG
+      - REDIS_HOST=redis
+
+
+
+# app/Dockerfile
