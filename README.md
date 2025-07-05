@@ -15,4 +15,6 @@ HyperLogLog is a probabilistic algorithm that estimates cardinality (number of d
 ---
 
 ## 🧩 Architecture
+[ Producers ] --> [ Kafka Topic: events ] --> [ Spring Boot Consumer ]
+--> [ Redis PFADD hll:siteId userId ]
 
